@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    environment {
-        MY_FILE = fileExists('/tmp/myfile')
-    }
     parameters {
         choice(
             choices: ['AA', 'BB'],
@@ -23,24 +20,19 @@ pipeline {
                 '''
             }
         }
-        stage('conditional if exists') {
-            when { expression { MY_FILE } }
+        stage('conditional') {
             steps {
                 script {
-                    echo "file exists"
-                    docker.image('alpine').inside {
-                        sh 'echo "This is running inside a Docker container because the file exists."'
-                    }
-                }
-            }
-        }
-        stage('conditional if not exists') {
-            when { expression { !MY_FILE } }
-            steps {
-                script {
-                    echo "file does not exist"
-                    docker.image('alpine').inside {
-                        sh 'echo "This is running inside a Docker container because the file does not exist."'
+                    if (fileExists('/tmp/myfile')) {
+                        echo "file exists"
+                        docker.image('alpine').inside {
+                            sh 'echo "This is running inside a Docker container because the file exists."'
+                        }
+                    } else {
+                        echo "file does not exist"
+                        docker.image('alpine').inside {
+                            sh 'echo "This is running inside a Docker container because the file does not exist."'
+                        }
                     }
                 }
             }
